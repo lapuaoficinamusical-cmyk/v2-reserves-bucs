@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reserva Bucs – La Pua</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">La Pua · Bucs d'assaig</p>
+        <h1>Reserva el teu buc en minuts</h1>
+        <p class="subtitle">Una experiència clara, ràpida i preparada per mòbil. Tria el buc, el dia i l'hora, i confirma la reserva.</p>
+      </div>
+      <div class="rules">
+        <div>
+          <span class="rule-label">Màxim mensual</span>
+          <strong>10 h</strong>
+        </div>
+        <div>
+          <span class="rule-label">Màxim diari</span>
+          <strong>3 h</strong>
+        </div>
+        <div>
+          <span class="rule-label">Tarifa</span>
+          <strong>8 €/h</strong>
+        </div>
+      </div>
+    </header>
+
+    <section class="section">
+      <div class="section-header">
+        <span class="step">1</span>
+        <div>
+          <h2>Selecciona el buc</h2>
+          <p>Escull quin espai vols reservar.</p>
+        </div>
+      </div>
+      <div class="buc-container">
+        <button class="buc" data-buc="A" type="button">
+          <span>Buc A</span>
+          <small>Equip complet · 20 m²</small>
+        </button>
+        <button class="buc" data-buc="B" type="button">
+          <span>Buc B</span>
+          <small>Amplificat · 25 m²</small>
+        </button>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <span class="step">2</span>
+        <div>
+          <h2>Selecciona el dia</h2>
+          <p>Consulta la disponibilitat del mes actual.</p>
+        </div>
+      </div>
+      <div class="calendar-panel">
+        <div id="calendarNav" class="calendar-nav">
+          <button class="button button--ghost" id="prev" type="button">&lt; Anterior</button>
+          <span id="monthLabel" class="month-label"></span>
+          <button class="button button--ghost" id="next" type="button">Següent &gt;</button>
+        </div>
+        <div id="calendarHeader" class="calendar-header"></div>
+        <div id="calendar" class="calendar-grid"></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <span class="step">3</span>
+        <div>
+          <h2>Hores disponibles</h2>
+          <p>Selecciona la franja horària que millor t'encaixi.</p>
+        </div>
+      </div>
+      <div id="slots" class="slots-grid"></div>
+      <div id="selection" class="selection-card hidden">
+        <div>
+          <p class="selection-title">Reserva seleccionada</p>
+          <p id="rangeText"></p>
+        </div>
+        <button class="button" id="addCart" type="button">Afegir al carret</button>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <span class="step">4</span>
+        <div>
+          <h2>Carret</h2>
+          <p>Revisa les reserves abans de confirmar.</p>
+        </div>
+      </div>
+      <div id="cartText" class="cart-list">Carret buit</div>
+      <div id="checkout" class="checkout-card hidden">
+        <h3>Finalitzar reserva</h3>
+        <div class="input-group">
+          <label for="name">Nom</label>
+          <input type="text" id="name" placeholder="Nom complet">
+        </div>
+        <div class="input-group">
+          <label for="email">Correu</label>
+          <input type="email" id="email" placeholder="correu@exemple.com">
+        </div>
+        <div id="summary" class="summary hidden">
+          <p id="duration"></p>
+          <p id="price"></p>
+        </div>
+        <button class="button" id="confirm" type="button">Confirmar reserva</button>
+      </div>
+    </section>
+  </div>
+
+  <div id="introModal" class="modal">
+    <div class="modal-content">
+      <p class="eyebrow">Benvingut/da</p>
+      <h2>Reserva el teu buc a La Pua</h2>
+      <p>Els bucs d'assaig són al soterrani del Casal de Torreblanca (Sant Cugat). Tria el buc, el dia i l'hora per reservar fàcilment.</p>
+      <button id="closeIntro" class="button" type="button">Començar a reservar</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
