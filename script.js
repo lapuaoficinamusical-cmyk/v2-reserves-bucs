@@ -36,6 +36,14 @@ const confirmBtn = document.getElementById("confirm");
 const summary = document.getElementById("summary");
 const durationEl = document.getElementById("duration");
 const priceEl = document.getElementById("price");
+const slotsHint = document.getElementById("slotsHint");
+const cartHint = document.getElementById("cartHint");
+const successModal = document.getElementById("successModal");
+const successName = document.getElementById("successName");
+const successList = document.getElementById("successList");
+const successTotal = document.getElementById("successTotal");
+const newBookingBtn = document.getElementById("newBooking");
+const app = document.querySelector(".app");
 
 /* MODAL */
 const introModal = document.getElementById("introModal");
@@ -49,6 +57,7 @@ bucEls.forEach(el => {
     bucEls.forEach(x => x.classList.remove("selected"));
     el.classList.add("selected");
     selectedBuc = el.dataset.buc;
+    updateActionsState();
     if (selectedDate) await renderSlots();
   };
 });
@@ -139,6 +148,7 @@ async function fetchAvailability(buc, date) {
 /* FRANGES */
 async function renderSlots() {
   slotsEl.innerHTML = ""; startCell = endCell = null; selection.classList.add("hidden");
+  slotsHint.classList.toggle("hidden", Boolean(selectedBuc && selectedDate));
   if (!selectedBuc || !selectedDate) return;
 
   // Intentem backend; si falla, fem fallback al localStorage (per no quedar-nos sense UI)
@@ -166,6 +176,7 @@ async function renderSlots() {
   }
 
   updateCartText();
+  updateActionsState();
 }
 
 function selectStart(i, reserved) {
@@ -208,6 +219,7 @@ function updateSelection() {
     rangeText.textContent = `Des de ${TIMES[startCell]} fins ${TIMES[endCell+1]} (Durada: ${dur} h)`;
     selection.classList.remove("hidden");
   }
+  updateActionsState();
 }
 
 /* ADD CART */
@@ -235,9 +247,11 @@ function updateCartText() {
     cartText.textContent = "Carret buit";
     summary.classList.add("hidden");
     checkout.classList.add("hidden");
+    cartHint.classList.remove("hidden");
     return;
   }
 
+  cartHint.classList.add("hidden");
   cart.forEach((c, index) => {
     const div = document.createElement("div");
     div.className = "cart-item";
@@ -260,7 +274,49 @@ function updateCartText() {
   priceEl.textContent = `Preu total: ${total * PRICE_PER_HOUR} €`;
   durationEl.textContent = `Total hores seleccionades: ${total} h`;
   summary.classList.remove("hidden");
+  updateActionsState();
 }
+
+function updateActionsState() {
+  const hasSelection = startCell !== null && endCell !== null;
+  addCartBtn.disabled = !(selectedBuc && selectedDate && hasSelection);
+  confirmBtn.disabled = cart.length === 0 || !nameInput.value.trim() || !emailInput.value.trim();
+}
+
+function setAppLocked(locked) {
+  app.classList.toggle("is-locked", locked);
+  successModal.classList.toggle("hidden", !locked);
+}
+
+function resetBooking() {
+  cart = [];
+  startCell = endCell = null;
+  nameInput.value = "";
+  emailInput.value = "";
+  checkout.classList.add("hidden");
+  updateCartText();
+  updateActionsState();
+}
+
+function showSuccess(payload) {
+  successName.textContent = `${payload.name} · ${payload.email}`;
+  successList.innerHTML = "";
+  payload.reservations.forEach(res => {
+    const row = document.createElement("div");
+    row.className = "success-row";
+    row.textContent = `Buc ${res.buc} · ${res.date} · ${res.startTime} – ${res.endTime} (${res.duration} h)`;
+    successList.appendChild(row);
+  });
+  successTotal.textContent = `Total: ${payload.totalHours} h · ${payload.totalPrice} €`;
+  setAppLocked(true);
+}
+
+nameInput.addEventListener("input", updateActionsState);
+emailInput.addEventListener("input", updateActionsState);
+newBookingBtn.addEventListener("click", () => {
+  setAppLocked(false);
+  resetBooking();
+});
 
 /**
  * ✅ BACKEND: enviar reserva + verificació + sheet + bloqueig
@@ -380,23 +436,25 @@ confirmBtn.onclick = async () => {
     saveResFallback(reserved);
   });
 
-  alert(`Reserva confirmada per ${nameInput.value} (${emailInput.value}). Revisa el teu correu per verificar-la.`);
+  cart = [];
+  startCell = endCell = null;
+  nameInput.value = "";
+  emailInput.value = "";
+  checkout.classList.add("hidden");
 
-cart = [];
-startCell = endCell = null;
-nameInput.value = "";
-emailInput.value = "";
-checkout.classList.add("hidden");
+  confirmBtn.disabled = false;
+  confirmBtn.textContent = "Confirmar reserva";
 
-confirmBtn.disabled = false;
-confirmBtn.textContent = "Confirmar reserva";
+  // 🔑 CLAU: tornem a carregar disponibilitat REAL
+  if (selectedBuc && selectedDate) {
+    await renderSlots();
+  }
 
-// 🔑 CLAU: tornem a carregar disponibilitat REAL
-if (selectedBuc && selectedDate) {
-  await renderSlots();
-}
-
+  showSuccess(payload);
 };
+
+updateCartText();
+updateActionsState();
 
 /* NAV CALENDARI */
 document.getElementById("prev").onclick = () => { month--; if (month < 0) { month = 11; year--; } buildCalendar(); };
