@@ -18,6 +18,7 @@ let cart = [];
 
 // Cache disponibilitat backend per (buc+date)
 let backendReserved = [];
+const sessionReserved = new Map();
 
 /* ELEMENTS */
 const bucEls = document.querySelectorAll(".buc");
@@ -36,6 +37,15 @@ const confirmBtn = document.getElementById("confirm");
 const summary = document.getElementById("summary");
 const durationEl = document.getElementById("duration");
 const priceEl = document.getElementById("price");
+const payCardBtn = document.getElementById("payCard");
+const slotsHint = document.getElementById("slotsHint");
+const cartHint = document.getElementById("cartHint");
+const successModal = document.getElementById("successModal");
+const successName = document.getElementById("successName");
+const successList = document.getElementById("successList");
+const successTotal = document.getElementById("successTotal");
+const newBookingBtn = document.getElementById("newBooking");
+const app = document.querySelector(".app");
 
 /* MODAL */
 const introModal = document.getElementById("introModal");
@@ -49,6 +59,7 @@ bucEls.forEach(el => {
     bucEls.forEach(x => x.classList.remove("selected"));
     el.classList.add("selected");
     selectedBuc = el.dataset.buc;
+    updateActionsState();
     if (selectedDate) await renderSlots();
   };
 });
@@ -139,6 +150,7 @@ async function fetchAvailability(buc, date) {
 /* FRANGES */
 async function renderSlots() {
   slotsEl.innerHTML = ""; startCell = endCell = null; selection.classList.add("hidden");
+  slotsHint.classList.toggle("hidden", Boolean(selectedBuc && selectedDate));
   if (!selectedBuc || !selectedDate) return;
 
   // Intentem backend; si falla, fem fallback al localStorage (per no quedar-nos sense UI)
@@ -151,21 +163,26 @@ async function renderSlots() {
     backendReserved = reserved.slice();
   }
 
+  const sessionKey = `${selectedBuc}_${selectedDate}`;
+  const reservedSession = sessionReserved.get(sessionKey) || [];
+  const reservedCombined = Array.from(new Set([...reserved, ...reservedSession]));
+
   for (let i = 0; i < TIMES.length - 1; i++) {
     const el = document.createElement("div");
     el.textContent = `${TIMES[i]} – ${TIMES[i+1]}`;
     el.className = "slot";
 
-    const busyByBackend = reserved.includes(TIMES[i]);
+    const busyByBackend = reservedCombined.includes(TIMES[i]);
     const busyByCart = cart.some(c => c.date === selectedDate && c.buc === selectedBuc && i >= c.startCell && i <= c.endCell);
 
     if (busyByBackend || busyByCart) el.classList.add("busy");
-    else el.onclick = () => selectStart(i, reserved);
+    else el.onclick = () => selectStart(i, reservedCombined);
 
     slotsEl.appendChild(el);
   }
 
   updateCartText();
+  updateActionsState();
 }
 
 function selectStart(i, reserved) {
@@ -208,6 +225,7 @@ function updateSelection() {
     rangeText.textContent = `Des de ${TIMES[startCell]} fins ${TIMES[endCell+1]} (Durada: ${dur} h)`;
     selection.classList.remove("hidden");
   }
+  updateActionsState();
 }
 
 /* ADD CART */
@@ -235,9 +253,11 @@ function updateCartText() {
     cartText.textContent = "Carret buit";
     summary.classList.add("hidden");
     checkout.classList.add("hidden");
+    cartHint.classList.remove("hidden");
     return;
   }
 
+  cartHint.classList.add("hidden");
   cart.forEach((c, index) => {
     const div = document.createElement("div");
     div.className = "cart-item";
@@ -260,7 +280,51 @@ function updateCartText() {
   priceEl.textContent = `Preu total: ${total * PRICE_PER_HOUR} €`;
   durationEl.textContent = `Total hores seleccionades: ${total} h`;
   summary.classList.remove("hidden");
+  updateActionsState();
 }
+
+function updateActionsState() {
+  const hasSelection = startCell !== null && endCell !== null;
+  addCartBtn.disabled = !(selectedBuc && selectedDate && hasSelection);
+  const canCheckout = cart.length > 0 && nameInput.value.trim() && emailInput.value.trim();
+  confirmBtn.disabled = !canCheckout;
+  payCardBtn.disabled = !canCheckout;
+}
+
+function setAppLocked(locked) {
+  app.classList.toggle("is-locked", locked);
+  successModal.classList.toggle("hidden", !locked);
+}
+
+function resetBooking() {
+  cart = [];
+  startCell = endCell = null;
+  nameInput.value = "";
+  emailInput.value = "";
+  checkout.classList.add("hidden");
+  updateCartText();
+  updateActionsState();
+}
+
+function showSuccess(payload) {
+  successName.textContent = `${payload.name} · ${payload.email}`;
+  successList.innerHTML = "";
+  payload.reservations.forEach(res => {
+    const row = document.createElement("div");
+    row.className = "success-row";
+    row.textContent = `Buc ${res.buc} · ${res.date} · ${res.startTime} – ${res.endTime} (${res.duration} h)`;
+    successList.appendChild(row);
+  });
+  successTotal.textContent = `Total: ${payload.totalHours} h · ${payload.totalPrice} €`;
+  setAppLocked(true);
+}
+
+nameInput.addEventListener("input", updateActionsState);
+emailInput.addEventListener("input", updateActionsState);
+newBookingBtn.addEventListener("click", () => {
+  setAppLocked(false);
+  resetBooking();
+});
 
 /**
  * ✅ BACKEND: enviar reserva + verificació + sheet + bloqueig
@@ -314,13 +378,14 @@ async function submitReservation(payload) {
 }
 
 
-/* CONFIRMAR */
-confirmBtn.onclick = async () => {
+async function handleReservation(paymentMethod) {
   if (cart.length === 0) { alert("Carret buit!"); return; }
   if (!nameInput.value || !emailInput.value) { alert("Omple nom i correu"); return; }
 
   confirmBtn.disabled = true;
+  payCardBtn.disabled = true;
   confirmBtn.textContent = "Enviant...";
+  payCardBtn.textContent = "Processant...";
 
   // Payload coherent amb el teu sistema + backend
   const payload = {
@@ -338,6 +403,7 @@ confirmBtn.onclick = async () => {
       endTime: TIMES[c.endCell + 1],
       duration: c.dur
     })),
+    paymentMethod,
     createdAt: new Date().toISOString(),
     userAgent: navigator.userAgent
   };
@@ -350,7 +416,9 @@ confirmBtn.onclick = async () => {
         if (reservedNow.includes(TIMES[i])) {
           alert(`Aquesta franja s'ha ocupat: Buc ${c.buc} el ${c.date} a les ${TIMES[i]}. Refresca i torna-ho a provar.`);
           confirmBtn.disabled = false;
+          payCardBtn.disabled = false;
           confirmBtn.textContent = "Confirmar reserva";
+          payCardBtn.textContent = "Pagar amb targeta";
           await renderSlots();
           return;
         }
@@ -365,7 +433,9 @@ confirmBtn.onclick = async () => {
   if (!result.ok) {
     alert(result.message);
     confirmBtn.disabled = false;
+    payCardBtn.disabled = false;
     confirmBtn.textContent = "Confirmar reserva";
+    payCardBtn.textContent = "Pagar amb targeta";
     return;
   }
 
@@ -376,27 +446,44 @@ confirmBtn.onclick = async () => {
     selectedBuc = c.buc;
     selectedDate = c.date;
     const reserved = getResFallback();
+    const sessionKey = `${c.buc}_${c.date}`;
+    const sessionList = sessionReserved.get(sessionKey) || [];
     for (let i = c.startCell; i <= c.endCell; i++) reserved.push(TIMES[i]);
+    for (let i = c.startCell; i <= c.endCell; i++) sessionList.push(TIMES[i]);
     saveResFallback(reserved);
+    sessionReserved.set(sessionKey, Array.from(new Set(sessionList)));
   });
 
-  alert(`Reserva confirmada per ${nameInput.value} (${emailInput.value}). Revisa el teu correu per verificar-la.`);
+  cart = [];
+  startCell = endCell = null;
+  nameInput.value = "";
+  emailInput.value = "";
+  checkout.classList.add("hidden");
 
-cart = [];
-startCell = endCell = null;
-nameInput.value = "";
-emailInput.value = "";
-checkout.classList.add("hidden");
+  confirmBtn.disabled = false;
+  payCardBtn.disabled = false;
+  confirmBtn.textContent = "Confirmar reserva";
+  payCardBtn.textContent = "Pagar amb targeta";
 
-confirmBtn.disabled = false;
-confirmBtn.textContent = "Confirmar reserva";
+  // 🔑 CLAU: tornem a carregar disponibilitat REAL
+  if (selectedBuc && selectedDate) {
+    await renderSlots();
+  }
 
-// 🔑 CLAU: tornem a carregar disponibilitat REAL
-if (selectedBuc && selectedDate) {
-  await renderSlots();
+  showSuccess(payload);
 }
 
+/* CONFIRMAR */
+confirmBtn.onclick = async () => {
+  await handleReservation("manual");
 };
+
+payCardBtn.onclick = async () => {
+  await handleReservation("card");
+};
+
+updateCartText();
+updateActionsState();
 
 /* NAV CALENDARI */
 document.getElementById("prev").onclick = () => { month--; if (month < 0) { month = 11; year--; } buildCalendar(); };

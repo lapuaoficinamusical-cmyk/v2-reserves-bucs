@@ -77,6 +77,7 @@
           <p>Selecciona la franja horària que millor t'encaixi.</p>
         </div>
       </div>
+      <p id="slotsHint" class="helper">Selecciona un buc i un dia per veure els horaris disponibles.</p>
       <div id="slots" class="slots-grid"></div>
       <div id="selection" class="selection-card hidden">
         <div>
@@ -95,6 +96,7 @@
           <p>Revisa les reserves abans de confirmar.</p>
         </div>
       </div>
+      <p id="cartHint" class="helper">Afegeix alguna franja per continuar amb la reserva.</p>
       <div id="cartText" class="cart-list">Carret buit</div>
       <div id="checkout" class="checkout-card hidden">
         <h3>Finalitzar reserva</h3>
@@ -110,7 +112,11 @@
           <p id="duration"></p>
           <p id="price"></p>
         </div>
-        <button class="button" id="confirm" type="button">Confirmar reserva</button>
+        <div class="checkout-actions">
+          <button class="button" id="confirm" type="button">Confirmar reserva</button>
+          <button class="button button--secondary" id="payCard" type="button">Pagar amb targeta</button>
+        </div>
+        <p class="helper helper--compact">Pagament segur amb targeta. La reserva queda bloquejada després de confirmar.</p>
       </div>
     </section>
   </div>
@@ -121,6 +127,20 @@
       <h2>Reserva el teu buc a La Pua</h2>
       <p>Els bucs d'assaig són al soterrani del Casal de Torreblanca (Sant Cugat). Tria el buc, el dia i l'hora per reservar fàcilment.</p>
       <button id="closeIntro" class="button" type="button">Començar a reservar</button>
+    </div>
+  </div>
+
+  <div id="successModal" class="modal hidden">
+    <div class="modal-content">
+      <p class="eyebrow">Reserva confirmada</p>
+      <h2>Tot a punt!</h2>
+      <p>Hem registrat la teva reserva. Rebràs un correu amb els detalls i la verificació.</p>
+      <div class="success-summary">
+        <p id="successName" class="success-title"></p>
+        <div id="successList" class="success-list"></div>
+        <p id="successTotal" class="success-total"></p>
+      </div>
+      <button id="newBooking" class="button" type="button">Fer una nova reserva</button>
     </div>
   </div>
 

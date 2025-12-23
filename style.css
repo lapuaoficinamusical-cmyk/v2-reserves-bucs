@@ -104,6 +104,16 @@ h1 {
   margin-top: 4px;
 }
 
+.helper {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.helper--compact {
+  font-size: 13px;
+  margin-top: -6px;
+}
+
 .step {
   width: 32px;
   height: 32px;
@@ -290,6 +300,12 @@ h1 {
   background: #fdfdfd;
 }
 
+.checkout-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 .input-group {
   display: grid;
   gap: 6px;
@@ -333,6 +349,12 @@ input:focus {
   transition: background 0.2s ease, transform 0.2s ease;
 }
 
+.button:disabled {
+  background: #c7c9f5;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .button:hover {
   background: var(--primary-dark);
   transform: translateY(-1px);
@@ -346,6 +368,14 @@ input:focus {
 
 .button--ghost:hover {
   background: #eef2ff;
+}
+
+.button--secondary {
+  background: #0f172a;
+}
+
+.button--secondary:hover {
+  background: #1f2937;
 }
 
 .button--danger {
@@ -381,6 +411,44 @@ input:focus {
   text-align: center;
   display: grid;
   gap: 12px;
+}
+
+.success-summary {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: grid;
+  gap: 8px;
+  text-align: left;
+}
+
+.success-title {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.success-list {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.success-row {
+  padding-left: 8px;
+  border-left: 2px solid #c7d2fe;
+}
+
+.success-total {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.app.is-locked {
+  opacity: 0.4;
+  pointer-events: none;
+  filter: blur(1px);
 }
 
 .hidden {
