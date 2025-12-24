@@ -9,23 +9,53 @@
 <body>
   <div class="app">
     <header class="app-header">
-      <div>
+      <div class="header-copy">
         <p class="eyebrow">La Pua · Bucs d'assaig</p>
         <h1>Reserva el teu buc en minuts</h1>
         <p class="subtitle">Una experiència clara, ràpida i preparada per mòbil. Tria el buc, el dia i l'hora, i confirma la reserva.</p>
+        <div class="pill-row">
+          <span class="pill">🎸 Bucs equipats</span>
+          <span class="pill">Confirmació per correu</span>
+          <span class="pill">Disponibilitat en temps real</span>
+          <span class="pill">Pagament a l'arribada</span>
+        </div>
       </div>
-      <div class="rules">
-        <div>
-          <span class="rule-label">Màxim mensual</span>
-          <strong>10 h</strong>
+      <div class="header-panels">
+        <div class="rules">
+          <div>
+            <span class="rule-label">Màxim mensual</span>
+            <strong>10 h</strong>
+          </div>
+          <div>
+            <span class="rule-label">Màxim diari</span>
+            <strong>3 h</strong>
+          </div>
+          <div>
+            <span class="rule-label">Tarifa</span>
+            <strong>8 €/h</strong>
+          </div>
         </div>
-        <div>
-          <span class="rule-label">Màxim diari</span>
-          <strong>3 h</strong>
-        </div>
-        <div>
-          <span class="rule-label">Tarifa</span>
-          <strong>8 €/h</strong>
+        <div class="status-card">
+          <p class="status-title">Estat de la reserva</p>
+          <p class="status-subtitle">Tot el que necessites per preparar l'assaig.</p>
+          <div class="status-row">
+            <span>Buc</span>
+            <strong id="statusBuc">Pendent</strong>
+          </div>
+          <div class="status-row">
+            <span>Data</span>
+            <strong id="statusDate">Selecciona un dia</strong>
+          </div>
+          <div class="status-row">
+            <span>Franja</span>
+            <strong id="statusTime">Selecciona una hora</strong>
+          </div>
+          <div class="status-row">
+            <span>Carret</span>
+            <strong id="statusCart">0 reserves</strong>
+          </div>
+          <div class="status-total" id="statusTotal">Total: 0 €</div>
+          <div class="status-footer">⏱️ Sessió mínima: 1 h · màxim 3 h/dia</div>
         </div>
       </div>
     </header>
@@ -35,19 +65,30 @@
         <span class="step">1</span>
         <div>
           <h2>Selecciona el buc</h2>
-          <p>Escull quin espai vols reservar.</p>
+          <p>Escull quin espai vols reservar i revisa l'equipament disponible.</p>
         </div>
       </div>
       <div class="buc-container">
         <button class="buc" data-buc="A" type="button">
           <span>Buc A</span>
           <small>Equip complet · 20 m²</small>
+          <div class="buc-tags">
+            <span>🎤 Microfonia</span>
+            <span>🥁 Bateria</span>
+            <span>🎛️ Taula 8 canals</span>
+          </div>
         </button>
         <button class="buc" data-buc="B" type="button">
           <span>Buc B</span>
           <small>Amplificat · 25 m²</small>
+          <div class="buc-tags">
+            <span>🎸 Amplis guitarra</span>
+            <span>🎹 Teclat</span>
+            <span>🔊 PA bàsica</span>
+          </div>
         </button>
       </div>
+      <div class="section-note">Vols més info? Escriu-nos abans de confirmar i t'ajudem a preparar l'assaig.</div>
     </section>
 
     <section class="section">
@@ -66,6 +107,11 @@
         </div>
         <div id="calendarHeader" class="calendar-header"></div>
         <div id="calendar" class="calendar-grid"></div>
+        <div class="legend">
+          <span><span class="legend-dot legend-dot--free"></span>Disponible</span>
+          <span><span class="legend-dot legend-dot--busy"></span>No disponible</span>
+          <span><span class="legend-dot legend-dot--selected"></span>Seleccionat</span>
+        </div>
       </div>
     </section>
 
@@ -77,8 +123,13 @@
           <p>Selecciona la franja horària que millor t'encaixi.</p>
         </div>
       </div>
-      <p id="slotsHint" class="helper">Selecciona un buc i un dia per veure els horaris disponibles.</p>
+      <p id="slotsHint" class="helper">Selecciona un buc i un dia per veure els horaris disponibles. Pots ampliar la franja fent clic sobre un segon horari.</p>
       <div id="slots" class="slots-grid"></div>
+      <div class="legend">
+        <span><span class="legend-dot legend-dot--free"></span>Lliure</span>
+        <span><span class="legend-dot legend-dot--busy"></span>Ocupada</span>
+        <span><span class="legend-dot legend-dot--selected"></span>Seleccionada</span>
+      </div>
       <div id="selection" class="selection-card hidden">
         <div>
           <p class="selection-title">Reserva seleccionada</p>
