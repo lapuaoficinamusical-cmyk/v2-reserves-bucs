@@ -44,6 +44,11 @@ const successList = document.getElementById("successList");
 const successTotal = document.getElementById("successTotal");
 const newBookingBtn = document.getElementById("newBooking");
 const app = document.querySelector(".app");
+const statusBuc = document.getElementById("statusBuc");
+const statusDate = document.getElementById("statusDate");
+const statusTime = document.getElementById("statusTime");
+const statusCart = document.getElementById("statusCart");
+const statusTotal = document.getElementById("statusTotal");
 
 /* MODAL */
 const introModal = document.getElementById("introModal");
@@ -65,6 +70,11 @@ bucEls.forEach(el => {
 /* HELPERS DATE */
 function pad2(n){ return String(n).padStart(2,"0"); }
 function isoDate(y,m,d){ return `${y}-${pad2(m+1)}-${pad2(d)}`; }
+function formatDateLabel(dateStr) {
+  if (!dateStr) return "Selecciona un dia";
+  const date = new Date(`${dateStr}T00:00:00`);
+  return date.toLocaleDateString("ca-ES", { weekday: "short", day: "numeric", month: "short" });
+}
 
 /* CALENDARI */
 function isDisabledDate(y, m, d) {
@@ -281,6 +291,21 @@ function updateActionsState() {
   const hasSelection = startCell !== null && endCell !== null;
   addCartBtn.disabled = !(selectedBuc && selectedDate && hasSelection);
   confirmBtn.disabled = cart.length === 0 || !nameInput.value.trim() || !emailInput.value.trim();
+  updateStatusSummary();
+}
+
+function updateStatusSummary() {
+  statusBuc.textContent = selectedBuc ? `Buc ${selectedBuc}` : "Pendent";
+  statusDate.textContent = formatDateLabel(selectedDate);
+
+  if (startCell !== null && endCell !== null) {
+    statusTime.textContent = `${TIMES[startCell]} – ${TIMES[endCell + 1]}`;
+  } else {
+    statusTime.textContent = "Selecciona una hora";
+  }
+
+  statusCart.textContent = `${cart.length} reserva${cart.length === 1 ? "" : "s"}`;
+  statusTotal.textContent = `Total: ${totalPrice()} €`;
 }
 
 function setAppLocked(locked) {
